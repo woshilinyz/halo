@@ -28,7 +28,7 @@ import static org.springframework.data.domain.Sort.Direction.DESC;
  */
 @Slf4j
 @Controller
-@RequestMapping(value = "/journal")
+@RequestMapping(value = "/journals")
 public class ContentJournalController {
 
     private final JournalService journalService;
@@ -53,11 +53,11 @@ public class ContentJournalController {
      * Render journal page.
      *
      * @param model model
-     * @return template path: theme/{theme}/journal.ftl
+     * @return template path: themes/{theme}/journals.ftl
      */
     @GetMapping
-    public String journal(Model model) {
-        return this.journal(model, 1, Sort.by(DESC, "createTime"));
+    public String journals(Model model) {
+        return this.journals(model, 1, Sort.by(DESC, "createTime"));
     }
 
 
@@ -66,10 +66,10 @@ public class ContentJournalController {
      *
      * @param model model
      * @param page  current page number
-     * @return template path: theme/{theme}/journal.ftl
+     * @return template path: themes/{theme}/journals.ftl
      */
     @GetMapping(value = "page/{page}")
-    public String journal(Model model,
+    public String journals(Model model,
                           @PathVariable(value = "page") Integer page,
                           @SortDefault(sort = "createTime", direction = DESC) Sort sort) {
         log.debug("Requested journal page, sort info: [{}]", sort);
@@ -85,6 +85,6 @@ public class ContentJournalController {
         model.addAttribute("is_journal", true);
         model.addAttribute("journals", journals);
         model.addAttribute("rainbow", rainbow);
-        return themeService.render("journal");
+        return themeService.render("journals");
     }
 }

@@ -1,13 +1,14 @@
 package run.halo.app.controller.content.api;
 
+import io.swagger.annotations.ApiOperation;
+import org.springframework.http.HttpStatus;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 import run.halo.app.model.dto.OptionDTO;
 import run.halo.app.model.support.BaseResponse;
 import run.halo.app.service.OptionService;
-import io.swagger.annotations.ApiOperation;
-import org.springframework.http.HttpStatus;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -47,5 +48,15 @@ public class OptionController {
     @ApiOperation("Gets option value by option key")
     public BaseResponse<Object> getBy(@PathVariable("key") String key) {
         return BaseResponse.ok(HttpStatus.OK.getReasonPhrase(), optionService.getByKey(key).orElse(null));
+    }
+
+
+    @GetMapping("comment")
+    @ApiOperation("Options for comment")
+    public Map<String, Object> comment() {
+        List<String> keys = new ArrayList<>();
+        keys.add("comment_gravatar_default");
+        keys.add("comment_content_placeholder");
+        return optionService.listOptions(keys);
     }
 }

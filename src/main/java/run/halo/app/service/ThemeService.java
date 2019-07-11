@@ -14,8 +14,10 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
+ * Theme service interface.
+ *
  * @author ryanwang
- * @date : 2019/3/26
+ * @date 2019-03-26
  */
 public interface ThemeService {
 
@@ -70,6 +72,16 @@ public interface ThemeService {
      * Custom sheet prefix.
      */
     String CUSTOM_SHEET_PREFIX = "sheet_";
+
+    /**
+     * Theme provider remote name.
+     */
+    String THEME_PROVIDER_REMOTE_NAME = "theme-provider";
+
+    /**
+     * Default remote branch name.
+     */
+    String DEFAULT_REMOTE_BRANCH = "master";
 
     /**
      * Get theme property by theme id.
@@ -241,4 +253,13 @@ public interface ThemeService {
      * Reloads themes
      */
     void reload();
+
+    /**
+     * Updates theme by theme id.
+     *
+     * @param themeId theme id must not be blank
+     * @return theme property
+     */
+    @NonNull
+    ThemeProperty update(@NonNull String themeId);
 }

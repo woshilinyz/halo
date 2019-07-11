@@ -29,6 +29,16 @@ public class ThemeProperty {
     private String website;
 
     /**
+     * Theme remote branch.(default is master)
+     */
+    private String branch;
+
+    /**
+     * Theme repo url.
+     */
+    private String repo;
+
+    /**
      * Theme description.
      */
     private String description;
@@ -49,7 +59,7 @@ public class ThemeProperty {
     private Author author;
 
     /**
-     * Theme path.
+     * Theme full path.
      */
     private String themePath;
 
@@ -73,6 +83,19 @@ public class ThemeProperty {
      */
     private String screenshots;
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ThemeProperty that = (ThemeProperty) o;
+        return id.equals(that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
     @Data
     public static class Author {
 
@@ -90,18 +113,5 @@ public class ThemeProperty {
          * Author avatar.
          */
         private String avatar;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        ThemeProperty that = (ThemeProperty) o;
-        return id.equals(that.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
     }
 }

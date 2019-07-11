@@ -4,11 +4,12 @@ package run.halo.app.model.properties;
  * Comment properties.
  *
  * @author johnniang
- * @date 4/1/19
+ * @author ryanwang
+ * @date 2019-04-01
  */
 public enum CommentProperties implements PropertyEnum {
 
-    GAVATAR_DEFAULT("comment_gavatar_default", String.class, "mm"),
+    GRAVATAR_DEFAULT("comment_gravatar_default", String.class, "mm"),
 
     NEW_NEED_CHECK("comment_new_need_check", Boolean.class, "true"),
 
@@ -22,9 +23,7 @@ public enum CommentProperties implements PropertyEnum {
 
     PAGE_SIZE("comment_page_size", Integer.class, "10"),
 
-    CONTENT_PLACEHOLDER("comment_content_placeholder", String.class, ""),
-
-    CUSTOM_STYLE("comment_custom_style", String.class, "");
+    CONTENT_PLACEHOLDER("comment_content_placeholder", String.class, "");
 
     private final String value;
 
@@ -51,4 +50,5 @@ public enum CommentProperties implements PropertyEnum {
     @Override
     public String getValue() {
         return value;
-    }}
+    }
+}

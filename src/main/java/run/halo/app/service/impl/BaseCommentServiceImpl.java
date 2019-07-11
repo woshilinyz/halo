@@ -1,5 +1,6 @@
 package run.halo.app.service.impl;
 
+import cn.hutool.core.util.URLUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -23,12 +24,14 @@ import run.halo.app.model.entity.User;
 import run.halo.app.model.enums.CommentStatus;
 import run.halo.app.model.params.BaseCommentParam;
 import run.halo.app.model.params.CommentQuery;
+import run.halo.app.model.projection.CommentChildrenCountProjection;
 import run.halo.app.model.projection.CommentCountProjection;
 import run.halo.app.model.properties.BlogProperties;
 import run.halo.app.model.properties.CommentProperties;
 import run.halo.app.model.support.CommentPage;
 import run.halo.app.model.vo.BaseCommentVO;
 import run.halo.app.model.vo.BaseCommentWithParentVO;
+import run.halo.app.model.vo.CommentWithHasChildrenVO;
 import run.halo.app.repository.base.BaseCommentRepository;
 import run.halo.app.security.authentication.Authentication;
 import run.halo.app.security.context.SecurityContextHolder;
@@ -48,18 +51,15 @@ import java.util.stream.Collectors;
  * Base comment service implementation.
  *
  * @author johnniang
- * @date 19-4-24
+ * @date 2019-04-24
  */
 @Slf4j
 public abstract class BaseCommentServiceImpl<COMMENT extends BaseComment> extends AbstractCrudService<COMMENT, Long> implements BaseCommentService<COMMENT> {
 
-    private final BaseCommentRepository<COMMENT> baseCommentRepository;
-
     protected final OptionService optionService;
-
     protected final UserService userService;
-
     protected final ApplicationEventPublisher eventPublisher;
+    private final BaseCommentRepository<COMMENT> baseCommentRepository;
 
     public BaseCommentServiceImpl(BaseCommentRepository<COMMENT> baseCommentRepository,
                                   OptionService optionService,
@@ -221,7 +221,7 @@ public abstract class BaseCommentServiceImpl<COMMENT extends BaseComment> extend
 
         // Check post id
         if (!ServiceUtils.isEmptyId(comment.getPostId())) {
-            targetMustExist(comment.getPostId());
+            validateTarget(comment.getPostId());
         }
 
         // Check parent id
@@ -241,8 +241,12 @@ public abstract class BaseCommentServiceImpl<COMMENT extends BaseComment> extend
             comment.setUserAgent(ServletUtils.getHeaderIgnoreCase(HttpHeaders.USER_AGENT));
         }
 
-        if (comment.getGavatarMd5() == null) {
-            comment.setGavatarMd5(DigestUtils.md5Hex(comment.getEmail()));
+        if (comment.getGravatarMd5() == null) {
+            comment.setGravatarMd5(DigestUtils.md5Hex(comment.getEmail()));
+        }
+
+        if (StringUtils.isNotEmpty(comment.getAuthorUrl())) {
+            comment.setAuthorUrl(URLUtil.normalize(comment.getAuthorUrl()));
         }
 
         if (authentication != null) {
@@ -294,7 +298,7 @@ public abstract class BaseCommentServiceImpl<COMMENT extends BaseComment> extend
             // Anonymous comment
             // Check email
             if (userService.getByEmail(commentParam.getEmail()).isPresent()) {
-                throw new BadRequestException("不能使用博主的邮件，如果您是博主，请登录管理端进行回复。");
+                throw new BadRequestException("不能使用博主的邮箱，如果您是博主，请登录管理端进行回复。");
             }
         }
 
@@ -414,6 +418,136 @@ public abstract class BaseCommentServiceImpl<COMMENT extends BaseComment> extend
         concreteTree(topVirtualComment, new LinkedList<>(comments), comparator);
 
         return topVirtualComment.getChildren();
+    }
+
+    @Override
+    public Page<CommentWithHasChildrenVO> pageTopCommentsBy(Integer targetId, CommentStatus status, Pageable pageable) {
+        Assert.notNull(targetId, "Target id must not be null");
+        Assert.notNull(status, "Comment status must not be null");
+        Assert.notNull(pageable, "Page info must not be null");
+
+        // Get all comments
+        Page<COMMENT> topCommentPage = baseCommentRepository.findAllByPostIdAndStatusAndParentId(targetId, status, 0L, pageable);
+
+        if (topCommentPage.isEmpty()) {
+            // If the comments is empty
+            return ServiceUtils.buildEmptyPageImpl(topCommentPage);
+        }
+
+        // Get top comment ids
+        Set<Long> topCommentIds = ServiceUtils.fetchProperty(topCommentPage.getContent(), BaseComment::getId);
+
+        // Get direct children count
+        List<CommentChildrenCountProjection> directChildrenCount = baseCommentRepository.findDirectChildrenCount(topCommentIds);
+
+        // Convert to comment - children count map
+        Map<Long, Long> commentChildrenCountMap = ServiceUtils.convertToMap(directChildrenCount, CommentChildrenCountProjection::getCommentId, CommentChildrenCountProjection::getDirectChildrenCount);
+
+        // Convert to comment with has children vo
+        return topCommentPage.map(topComment -> {
+            CommentWithHasChildrenVO comment = new CommentWithHasChildrenVO().convertFrom(topComment);
+            comment.setHasChildren(commentChildrenCountMap.getOrDefault(topComment.getId(), 0L) > 0);
+            return comment;
+        });
+    }
+
+    @Override
+    public List<COMMENT> listChildrenBy(Integer targetId, Long commentParentId, CommentStatus status, Sort sort) {
+        Assert.notNull(targetId, "Target id must not be null");
+        Assert.notNull(commentParentId, "Comment parent id must not be null");
+        Assert.notNull(sort, "Sort info must not be null");
+
+        // Get comments recursively
+
+        // Get direct children
+        List<COMMENT> directChildren = baseCommentRepository.findAllByPostIdAndStatusAndParentId(targetId, status, commentParentId);
+
+        // Create result container
+        Set<COMMENT> children = new HashSet<>();
+
+        // Get children comments
+        getChildrenRecursively(directChildren, status, children);
+
+        // Sort children
+        List<COMMENT> childrenList = new ArrayList<>(children);
+        childrenList.sort(Comparator.comparing(BaseComment::getId));
+
+        return childrenList;
+    }
+
+    @Override
+    public <T extends BaseCommentDTO> T filterIpAddress(@NonNull T comment) {
+        Assert.notNull(comment, "Base comment dto must not be null");
+
+        // Clear ip address
+        comment.setIpAddress("");
+
+        // Handle base comment vo
+        if (comment instanceof BaseCommentVO) {
+            BaseCommentVO baseCommentVO = (BaseCommentVO) comment;
+            Queue<BaseCommentVO> commentQueue = new LinkedList<>();
+            commentQueue.offer(baseCommentVO);
+            while (!commentQueue.isEmpty()) {
+                BaseCommentVO current = commentQueue.poll();
+
+                // Clear ip address
+                current.setIpAddress("");
+
+                if (!CollectionUtils.isEmpty(current.getChildren())) {
+                    // Add children
+                    commentQueue.addAll(current.getChildren());
+                }
+            }
+        }
+
+        return comment;
+    }
+
+    @Override
+    public <T extends BaseCommentDTO> List<T> filterIpAddress(List<T> comments) {
+        if (CollectionUtils.isEmpty(comments)) {
+            return Collections.emptyList();
+        }
+
+        comments.forEach(this::filterIpAddress);
+
+        return comments;
+    }
+
+    @Override
+    public <T extends BaseCommentDTO> Page<T> filterIpAddress(Page<T> commentPage) {
+        Assert.notNull(commentPage, "Comment page must not be null");
+        commentPage.forEach(this::filterIpAddress);
+
+        return commentPage;
+    }
+
+    /**
+     * Get children comments recursively.
+     *
+     * @param topComments top comment list
+     * @param status      comment status must not be null
+     * @param children    children result must not be null
+     */
+    private void getChildrenRecursively(@Nullable List<COMMENT> topComments, @NonNull CommentStatus status, @NonNull Set<COMMENT> children) {
+        Assert.notNull(status, "Comment status must not be null");
+        Assert.notNull(children, "Children comment set must not be null");
+
+        if (CollectionUtils.isEmpty(topComments)) {
+            return;
+        }
+
+        // Convert comment id set
+        Set<Long> commentIds = ServiceUtils.fetchProperty(topComments, COMMENT::getId);
+
+        // Get direct children
+        List<COMMENT> directChildren = baseCommentRepository.findAllByStatusAndParentIdIn(status, commentIds);
+
+        // Recursively invoke
+        getChildrenRecursively(directChildren, status, children);
+
+        // Add direct children to children result
+        children.addAll(topComments);
     }
 
     /**

@@ -5,7 +5,6 @@ import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import run.halo.app.model.enums.PostCreateFrom;
 import run.halo.app.model.enums.PostStatus;
-import run.halo.app.utils.MarkdownUtils;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -17,7 +16,7 @@ import java.util.Date;
  */
 @Data
 @Entity(name = "BasePost")
-@Table(name = "posts", indexes = @Index(columnList = "url"))
+@Table(name = "posts")
 @DiscriminatorColumn(name = "type", discriminatorType = DiscriminatorType.INTEGER, columnDefinition = "int default 0")
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
@@ -54,7 +53,7 @@ public class BasePost extends BaseEntity {
     /**
      * Rendered content.
      *
-     * @see MarkdownUtils#renderMarkdown(String)
+     * @see run.halo.app.utils.MarkdownUtils#renderHtml(String)
      */
     @Column(name = "format_content", columnDefinition = "text not null")
     private String formatContent;

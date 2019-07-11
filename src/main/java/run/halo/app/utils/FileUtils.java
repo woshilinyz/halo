@@ -6,14 +6,14 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import run.halo.app.exception.ForbiddenException;
 
-import java.io.File;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -63,21 +63,24 @@ public class FileUtils {
      *
      * @param deletingPath deleting path must not be null
      */
-    public static void deleteFolder(Path deletingPath) throws IOException {
+    public static void deleteFolder(@NonNull Path deletingPath) throws IOException {
         Assert.notNull(deletingPath, "Deleting path must not be null");
 
-        log.debug("Deleting [{}]", deletingPath);
+        if (Files.notExists(deletingPath)) {
+            return;
+        }
 
-        Files.walk(deletingPath)
-                .sorted(Comparator.reverseOrder())
-                .map(Path::toFile)
-                .forEach(File::delete);
+        log.info("Deleting [{}]", deletingPath);
 
-        log.debug("Deleted [{}] successfully", deletingPath);
+        // Delete folder recursively
+        org.eclipse.jgit.util.FileUtils.delete(deletingPath.toFile(),
+                org.eclipse.jgit.util.FileUtils.RECURSIVE | org.eclipse.jgit.util.FileUtils.RETRY);
+
+        log.info("Deleted [{}] successfully", deletingPath);
     }
 
     /**
-     * Unzip content to the target path.
+     * Unzips content to the target path.
      *
      * @param zis        zip input stream must not be null
      * @param targetPath target path must not be null and not empty
@@ -114,23 +117,40 @@ public class FileUtils {
         }
     }
 
+
     /**
-     * Skips zip parent folder. (Go into base folder)
+     * Unzips content to the target path.
+     *
+     * @param bytes      zip bytes array must not be null
+     * @param targetPath target path must not be null and not empty
+     * @throws IOException
+     */
+    public static void unzip(@NonNull byte[] bytes, @NonNull Path targetPath) throws IOException {
+        Assert.notNull(bytes, "Zip bytes must not be null");
+
+        ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(bytes));
+        unzip(zis, targetPath);
+    }
+
+    /**
+     * Try to skip zip parent folder. (Go into base folder)
      *
      * @param unzippedPath unzipped path must not be null
      * @return path containing base files
      * @throws IOException
      */
-    public static Path skipZipParentFolder(@NonNull Path unzippedPath) throws IOException {
+    public static Path tryToSkipZipParentFolder(@NonNull Path unzippedPath) throws IOException {
         Assert.notNull(unzippedPath, "Unzipped folder must not be  null");
 
-        List<Path> childrenPath = Files.list(unzippedPath).collect(Collectors.toList());
+        // TODO May cause a latent problem.
+        try (Stream<Path> pathStream = Files.list(unzippedPath)) {
+            List<Path> childrenPath = pathStream.collect(Collectors.toList());
 
-        if (childrenPath.size() == 1 && Files.isDirectory(childrenPath.get(0))) {
-            return childrenPath.get(0);
+            if (childrenPath.size() == 1 && Files.isDirectory(childrenPath.get(0))) {
+                return childrenPath.get(0);
+            }
+            return unzippedPath;
         }
-
-        return unzippedPath;
     }
 
     /**
@@ -160,7 +180,13 @@ public class FileUtils {
     public static boolean isEmpty(@NonNull Path path) throws IOException {
         Assert.notNull(path, "Path must not be null");
 
-        return Files.list(path).count() == 0;
+        if (!Files.isDirectory(path) || Files.notExists(path)) {
+            return true;
+        }
+
+        try (Stream<Path> pathStream = Files.list(path)) {
+            return pathStream.count() == 0;
+        }
     }
 
     /**
@@ -248,9 +274,9 @@ public class FileUtils {
     /**
      * Deletes folder quietly.
      *
-     * @param deletingPath deleting path must not be null
+     * @param deletingPath deleting path
      */
-    public static void deleteFolderQuietly(@NonNull Path deletingPath) {
+    public static void deleteFolderQuietly(@Nullable Path deletingPath) {
         try {
             if (deletingPath != null) {
                 FileUtils.deleteFolder(deletingPath);
@@ -258,5 +284,17 @@ public class FileUtils {
         } catch (IOException e) {
             log.warn("Failed to delete " + deletingPath);
         }
+    }
+
+
+    /**
+     * Creates temp directory.
+     *
+     * @return temp directory path
+     * @throws IOException if an I/O error occurs or the temporary-file directory does not exist
+     */
+    @NonNull
+    public static Path createTempDirectory() throws IOException {
+        return Files.createTempDirectory("halo");
     }
 }

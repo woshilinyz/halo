@@ -59,8 +59,7 @@ public class ThemeController {
 
     @PutMapping("files/content")
     public void updateContentBy(@RequestParam(name = "path") String path,
-                                @RequestParam(name = "content") String content) {
-        // TODO Refactor the params to body
+                                @RequestBody String content) {
         themeService.saveTemplateContent(path, content);
     }
 
@@ -118,6 +117,13 @@ public class ThemeController {
         themeSettingService.save(settings, themeId);
     }
 
+    @PutMapping("{themeId}")
+    public ThemeProperty updateTheme(@PathVariable("themeId") String themeId,
+                                     @RequestPart(name = "file", required = false) MultipartFile file) {
+
+        return themeService.update(themeId);
+    }
+
     @DeleteMapping("{themeId}")
     @ApiOperation("Deletes a theme")
     public void deleteBy(@PathVariable("themeId") String themeId) {
@@ -141,4 +147,10 @@ public class ThemeController {
     public void reload() {
         themeService.reload();
     }
+
+    @GetMapping(value = "activation/template/exists")
+    public BaseResponse exists(@RequestParam(value = "template") String template) {
+        return BaseResponse.ok(themeService.templateExists(template));
+    }
+
 }

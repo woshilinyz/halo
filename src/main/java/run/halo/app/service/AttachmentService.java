@@ -17,6 +17,7 @@ import java.util.List;
  * Attachment service.
  *
  * @author johnniang
+ * @date : 2019-03-14
  */
 public interface AttachmentService extends CrudService<Attachment, Integer> {
 
@@ -59,6 +60,7 @@ public interface AttachmentService extends CrudService<Attachment, Integer> {
 
     /**
      * List all media type.
+     *
      * @return list of media type
      */
     List<String> listAllMediaType();

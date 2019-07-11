@@ -1,20 +1,17 @@
 <h1 align="center"><a href="https://github.com/halo-dev" target="_blank">Halo</a></h1>
 
-> Halo 可能是最好的 Java 博客系统。
+> Halo 是一款现代化的个人独立博客系统，给习惯写博客的同学一个更好的选择。
 
 <p align="center">
-<a href="https://ryanc.cc"><img alt="Author" src="https://img.shields.io/badge/author-ruibaby-red.svg?style=flat-square"/></a>
 <a href="#"><img alt="JDK" src="https://img.shields.io/badge/JDK-1.8-yellow.svg?style=flat-square"/></a>
 <a href="https://github.com/halo-dev/halo/releases"><img alt="GitHub release" src="https://img.shields.io/github/release/halo-dev/halo.svg?style=flat-square"/></a>
+<a href="https://github.com/halo-dev/halo/releases"><img alt="GitHub All Releases" src="https://img.shields.io/github/downloads/halo-dev/halo/total.svg?style=flat-square"></a>
+<a href="https://github.com/halo-dev/halo/commits"><img alt="GitHub commit activity" src="https://img.shields.io/github/commit-activity/w/halo-dev/halo.svg?style=flat-square"></a>
+<a href="https://github.com/halo-dev/halo/commits"><img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/halo-dev/halo.svg?style=flat-square"></a>
 <a href="https://travis-ci.org/halo-dev/halo"><img alt="Travis CI" src="https://img.shields.io/travis/halo-dev/halo.svg?style=flat-square"/></a>
-<a href="https://hub.docker.com/r/halo-dev/halo/"><img alt="Docker Build Status" src="https://img.shields.io/docker/build/halo-dev/halo.svg?style=flat-square"/></a>
 </p>
 
 ------------------------------
-
-## 新版本说明
-
-**老版本已不提供维护，请不要再使用老版本进行部署了，当前分支为新版本，正在内测中，将于近期发布版本**
 
 ## 简介
 
@@ -22,38 +19,40 @@
 
 轻快，简洁，功能强大，使用 Java 开发的博客系统。
 
-> QQ 交流群: 162747721 | Telegram 交流群：[https://t.me/HaloBlog](https://t.me/HaloBlog) | Telegram 频道：[https://t.me/halo_dev](https://t.me/halo_dev) | [WeHalo 小程序](https://github.com/aquanlerou/WeHalo)。
+> [官网论坛](https://bbs.halo.run) | [QQ 交流群](https://jq.qq.com/?_wv=1027&k=5tnr930) | [Telegram 交流群](https://t.me/HaloBlog) | [Telegram 频道](https://t.me/halo_dev) | [WeHalo 小程序](https://github.com/aquanlerou/WeHalo)。
 
 ## 快速开始
 
-老版本下载地址：[https://github.com/halo-dev/halo/releases/tag/v0.4.4](https://github.com/halo-dev/halo/releases/tag/v0.4.4)
+### 下载最新的 Halo 安装包
 
-新版本正在内测中。
+```bash
+curl -L https://github.com/halo-dev/halo/releases/download/v1.0.3/halo-1.0.3.jar --output halo-latest.jar
+```
+
+或者
+
+```bash
+wget https://github.com/halo-dev/halo/releases/download/v1.0.3/halo-1.0.3.jar -O halo-latest.jar
+```
+
+### 启动 Halo
+
+```bash
+nohup java -jar halo-latest.jar >/dev/null 2>&1&
+```
+
+详细文档请移步：<https://halo.run/guide>
 
 ## 博客示例
 
-[Ryan0up'S Blog](https://ryanc.cc)
+请移步： <https://github.com/halo-dev/halo/issues/26>。
 
-[SNAIL BLOG](https://slogc.cc)
+## 周边
 
-[宋浩志博客](http://songhaozhi.com)
-
-[KingYiFan'S Blog](https://blog.cnbuilder.cn)
-
-[AquanBlog](https://blog.eunji.cn/)
-
-## 主题
-
-除了内置的 [Anatole](https://github.com/hi-caicai/farbox-theme-Anatole) 和 [Material](https://github.com/viosey/hexo-theme-material) ，还有下列主题没有集成在项目里，如有需要，请自行下载之后通过后台上传上去使用。
-
-- [Vno](https://github.com/halo-dev/vno-halo) - 来自 Jekyll 的一款主题，作者 [Wei Wang](https://onevcat.com/)。
-- [Hux](https://github.com/halo-dev/hux-halo) - 来自 Jekyll 的一款主题，作者 [Xuan Huang](https://huangxuan.me/)。
-- [Story](https://github.com/halo-dev/story-halo) - 来自 Typecho 的一款主题，作者 [Trii Hsia](https://yumoe.com/)。
-- [NexT](https://github.com/halo-dev/next-halo) - 来自 Hexo 的一款主题，作者 [iissnan](https://notes.iissnan.com/)。
-- [Casper](https://github.com/halo-dev/casper-halo) - 来自 Ghost 的一款主题，作者 [Ghost](https://github.com/TryGhost)。
-- [Pinghsu](https://github.com/halo-dev/pinghsu-halo) - 来自 Typecho 的一款主题，作者 [Chakhsu.Lau](https://github.com/chakhsu)。
-
-> 声明：不接受任何对**移植主题**功能上的意见和建议。
+- 后台管理（halo-admin）：<https://github.com/halo-dev/halo-admin>
+- 独立评论模块（halo-comment）：<https://github.com/halo-dev/halo-comment>
+- 管理 APP（halo-app）：<https://github.com/halo-dev/halo-app>
+- 主题仓库：<https://halo.run/theme>
 
 ## 许可证
 

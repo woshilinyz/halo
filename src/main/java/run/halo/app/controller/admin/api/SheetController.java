@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
+import run.halo.app.model.dto.InternalSheetDTO;
 import run.halo.app.model.dto.post.BasePostDetailDTO;
 import run.halo.app.model.entity.Sheet;
 import run.halo.app.model.enums.PostStatus;
@@ -13,6 +14,7 @@ import run.halo.app.model.vo.SheetListVO;
 import run.halo.app.service.SheetService;
 
 import javax.validation.Valid;
+import java.util.List;
 
 import static org.springframework.data.domain.Sort.Direction.DESC;
 
@@ -20,6 +22,7 @@ import static org.springframework.data.domain.Sort.Direction.DESC;
  * Sheet controller.
  *
  * @author johnniang
+ * @author ryanwang
  * @date 19-4-24
  */
 @RestController
@@ -46,10 +49,17 @@ public class SheetController {
         return sheetService.convertToListVo(sheetPage);
     }
 
+    @GetMapping("internal")
+    @ApiOperation("Lists internal sheets")
+    public List<InternalSheetDTO> internalSheets() {
+        return sheetService.listInternal();
+    }
+
     @PostMapping
     @ApiOperation("Creates a sheet")
-    public BasePostDetailDTO createBy(@RequestBody @Valid SheetParam sheetParam) {
-        Sheet sheet = sheetService.createBy(sheetParam.convertTo());
+    public BasePostDetailDTO createBy(@RequestBody @Valid SheetParam sheetParam,
+                                      @RequestParam(value = "autoSave", required = false, defaultValue = "false") Boolean autoSave) {
+        Sheet sheet = sheetService.createBy(sheetParam.convertTo(), autoSave);
         return sheetService.convertToDetail(sheet);
     }
 
@@ -57,12 +67,13 @@ public class SheetController {
     @ApiOperation("Updates a sheet")
     public BasePostDetailDTO updateBy(
             @PathVariable("sheetId") Integer sheetId,
-            @RequestBody @Valid SheetParam sheetParam) {
+            @RequestBody @Valid SheetParam sheetParam,
+            @RequestParam(value = "autoSave", required = false, defaultValue = "false") Boolean autoSave) {
         Sheet sheetToUpdate = sheetService.getById(sheetId);
 
         sheetParam.update(sheetToUpdate);
 
-        Sheet sheet = sheetService.updateBy(sheetToUpdate);
+        Sheet sheet = sheetService.updateBy(sheetToUpdate, autoSave);
 
         return sheetService.convertToDetail(sheet);
     }

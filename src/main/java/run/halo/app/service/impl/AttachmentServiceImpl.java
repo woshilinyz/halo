@@ -32,6 +32,7 @@ import java.util.Objects;
  * AttachmentService implementation
  *
  * @author ryanwang
+ * @author johnniang
  * @date : 2019-03-14
  */
 @Slf4j
@@ -188,7 +189,7 @@ public class AttachmentServiceImpl extends AbstractCrudService<Attachment, Integ
         long pathCount = attachmentRepository.countByPath(attachment.getPath());
 
         if (pathCount > 0) {
-            throw new AlreadyExistsException("The attachment with path " + attachment.getPath() + " exists already");
+            throw new AlreadyExistsException("附件路径为 " + attachment.getPath() + " 已经存在");
         }
     }
 

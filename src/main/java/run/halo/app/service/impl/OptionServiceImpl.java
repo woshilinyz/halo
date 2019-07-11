@@ -30,7 +30,7 @@ import java.util.*;
  * OptionService implementation class
  *
  * @author ryanwang
- * @date : 2019-03-14
+ * @date 2019-03-14
  */
 @Slf4j
 @Service
@@ -312,7 +312,7 @@ public class OptionServiceImpl extends AbstractCrudService<Option, Integer> impl
 
     @Override
     public Zone getQnYunZone() {
-        return getByProperty(QnYunProperties.ZONE).map(qiniuZone -> {
+        return getByProperty(QnYunProperties.OSS_ZONE).map(qiniuZone -> {
 
             Zone zone;
             switch (qiniuZone.toString()) {

@@ -1,5 +1,12 @@
 package run.halo.app.handler.file;
 
+import lombok.extern.slf4j.Slf4j;
+import net.coobird.thumbnailator.Thumbnails;
+import org.springframework.http.MediaType;
+import org.springframework.lang.NonNull;
+import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
+import org.springframework.web.multipart.MultipartFile;
 import run.halo.app.config.properties.HaloProperties;
 import run.halo.app.exception.FileOperationException;
 import run.halo.app.exception.ServiceException;
@@ -8,13 +15,6 @@ import run.halo.app.model.support.UploadResult;
 import run.halo.app.service.OptionService;
 import run.halo.app.utils.FilenameUtils;
 import run.halo.app.utils.HaloUtils;
-import lombok.extern.slf4j.Slf4j;
-import net.coobird.thumbnailator.Thumbnails;
-import org.springframework.http.MediaType;
-import org.springframework.lang.NonNull;
-import org.springframework.stereotype.Component;
-import org.springframework.util.Assert;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -162,7 +162,7 @@ public class LocalFileHandler implements FileHandler {
             return uploadResult;
         } catch (IOException e) {
             log.error("Failed to upload file to local: " + uploadPath, e);
-            throw new ServiceException("Failed to upload file to local").setErrorData(uploadPath);
+            throw new ServiceException("上传附件失败").setErrorData(uploadPath);
         }
     }
 
@@ -177,7 +177,7 @@ public class LocalFileHandler implements FileHandler {
         try {
             Files.delete(path);
         } catch (IOException e) {
-            throw new FileOperationException("Failed to delete " + key + " file", e);
+            throw new FileOperationException("附件 " + key + " 删除失败", e);
         }
 
         // Delete thumb if necessary
@@ -197,7 +197,7 @@ public class LocalFileHandler implements FileHandler {
                 log.warn("Thumbnail: [{}] way not exist", thumbnailPath.toString());
             }
         } catch (IOException e) {
-            throw new FileOperationException("Failed to delete " + thumbnailName + " thumbnail", e);
+            throw new FileOperationException("附件缩略图 " + thumbnailName + " 删除失败", e);
         }
     }
 

@@ -3,7 +3,6 @@ package run.halo.app.config;
 import com.fasterxml.classmate.TypeResolver;
 import io.swagger.models.auth.In;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
@@ -57,7 +56,7 @@ public class SwaggerConfiguration {
             new ResponseMessageBuilder().code(404).message("Not found").build(),
             new ResponseMessageBuilder().code(500).message("Internal server error").build());
 
-    public SwaggerConfiguration(                                HaloProperties haloProperties) {
+    public SwaggerConfiguration(HaloProperties haloProperties) {
         this.haloProperties = haloProperties;
     }
 
@@ -70,8 +69,8 @@ public class SwaggerConfiguration {
         return buildApiDocket("run.halo.app.content.api",
                 "run.halo.app.controller.content.api",
                 "/api/content/**")
-                .securitySchemes(portalApiKeys())
-                .securityContexts(portalSecurityContext())
+                .securitySchemes(contentApiKeys())
+                .securityContexts(contentSecurityContext())
                 .enable(!haloProperties.isDocDisabled());
     }
 
@@ -138,26 +137,32 @@ public class SwaggerConfiguration {
         );
     }
 
-    private List<ApiKey> portalApiKeys() {
+    private List<ApiKey> contentApiKeys() {
         return Arrays.asList(
-                new ApiKey("Token from header", ApiAuthenticationFilter.API_TOKEN_HEADER_NAME, In.HEADER.name()),
-                new ApiKey("Token from query", ApiAuthenticationFilter.API_TOKEN_QUERY_NAME, In.QUERY.name())
+                new ApiKey("Access key from header", ApiAuthenticationFilter.API_ACCESS_KEY_HEADER_NAME, In.HEADER.name()),
+                new ApiKey("Access key from query", ApiAuthenticationFilter.API_ACCESS_KEY_QUERY_NAME, In.QUERY.name())
         );
     }
 
-    private List<SecurityContext> portalSecurityContext() {
+    private List<SecurityContext> contentSecurityContext() {
         return Collections.singletonList(
                 SecurityContext.builder()
-                        .securityReferences(defaultAuth())
+                        .securityReferences(contentApiAuth())
                         .forPaths(PathSelectors.regex("/api/content/.*"))
                         .build()
         );
     }
 
     private List<SecurityReference> defaultAuth() {
-        AuthorizationScope[] authorizationScopes = {new AuthorizationScope("global", "accessEverything")};
+        AuthorizationScope[] authorizationScopes = {new AuthorizationScope("Admin api", "Access admin api")};
         return Arrays.asList(new SecurityReference("Token from header", authorizationScopes),
                 new SecurityReference("Token from query", authorizationScopes));
+    }
+
+    private List<SecurityReference> contentApiAuth() {
+        AuthorizationScope[] authorizationScopes = {new AuthorizationScope("content api", "Access content api")};
+        return Arrays.asList(new SecurityReference("Access key from header", authorizationScopes),
+                new SecurityReference("Access key from query", authorizationScopes));
     }
 
     private ApiInfo apiInfo() {

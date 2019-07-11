@@ -29,6 +29,9 @@ import run.halo.app.security.resolver.AuthenticationArgumentResolver;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Properties;
+
+import static run.halo.app.model.support.HaloConst.HALO_ADMIN_RELATIVE_PATH;
 
 /**
  * Mvc configuration.
@@ -78,21 +81,17 @@ public class WebMvcAutoConfiguration implements WebMvcConfigurer {
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         String workDir = FILE_PROTOCOL + haloProperties.getWorkDir();
-        registry.addResourceHandler("/static/**")
-                .addResourceLocations("classpath:/static/")
-                .addResourceLocations(workDir + "static/");
         registry.addResourceHandler("/**")
                 .addResourceLocations(workDir + "templates/themes/")
                 .addResourceLocations(workDir + "templates/admin/")
-                .addResourceLocations("classpath:/admin/");
+                .addResourceLocations("classpath:/admin/")
+                .addResourceLocations(workDir + "static/");
         registry.addResourceHandler("/upload/**")
                 .addResourceLocations(workDir + "upload/");
-        registry.addResourceHandler("/favicon.ico")
-                .addResourceLocations("classpath:/static/halo-admin/images/favicon.ico");
         registry.addResourceHandler("/backup/**")
                 .addResourceLocations(workDir + "backup/");
         registry.addResourceHandler("/admin/**")
-                .addResourceLocations(workDir + "templates/admin/")
+                .addResourceLocations(workDir + HALO_ADMIN_RELATIVE_PATH)
                 .addResourceLocations("classpath:/admin/");
 
         if (!haloProperties.isDocDisabled()) {
@@ -119,6 +118,11 @@ public class WebMvcAutoConfiguration implements WebMvcConfigurer {
         FreeMarkerConfigurer configurer = new FreeMarkerConfigurer();
         configurer.setTemplateLoaderPaths(FILE_PROTOCOL + haloProperties.getWorkDir() + "templates/", "classpath:/templates/");
         configurer.setDefaultEncoding("UTF-8");
+
+        Properties properties = new Properties();
+        properties.setProperty("auto_import", "/common/macro/common_macro.ftl as common,/common/macro/global_macro.ftl as global");
+
+        configurer.setFreemarkerSettings(properties);
 
         // Predefine configuration
         freemarker.template.Configuration configuration = configurer.createConfiguration();

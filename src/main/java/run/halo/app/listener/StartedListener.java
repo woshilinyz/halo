@@ -9,20 +9,15 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.util.ResourceUtils;
 import run.halo.app.config.properties.HaloProperties;
-import run.halo.app.model.entity.User;
-import run.halo.app.model.params.UserParam;
 import run.halo.app.model.properties.PrimaryProperties;
-import run.halo.app.model.support.CreateCheck;
 import run.halo.app.service.OptionService;
 import run.halo.app.service.ThemeService;
 import run.halo.app.service.UserService;
 import run.halo.app.utils.FileUtils;
-import run.halo.app.utils.ValidationUtils;
 
 import java.net.URI;
 import java.nio.file.*;
 import java.util.Collections;
-import java.util.List;
 
 /**
  * The method executed after the application is started.
@@ -80,6 +75,8 @@ public class StartedListener implements ApplicationListener<ApplicationStartedEv
             String themeClassPath = ResourceUtils.CLASSPATH_URL_PREFIX + ThemeService.THEME_FOLDER;
 
             URI themeUri = ResourceUtils.getURL(themeClassPath).toURI();
+
+            log.debug("Theme uri: [{}]", themeUri);
 
             Path source;
 

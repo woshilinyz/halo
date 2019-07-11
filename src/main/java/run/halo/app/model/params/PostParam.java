@@ -1,17 +1,18 @@
 package run.halo.app.model.params;
 
+import cn.hutool.crypto.digest.BCrypt;
+import lombok.Data;
+import org.apache.commons.lang3.StringUtils;
 import run.halo.app.model.dto.base.InputConverter;
 import run.halo.app.model.entity.Post;
 import run.halo.app.model.enums.PostCreateFrom;
 import run.halo.app.model.enums.PostStatus;
 import run.halo.app.utils.HaloUtils;
-import cn.hutool.crypto.digest.BCrypt;
-import lombok.Data;
-import org.apache.commons.lang3.StringUtils;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
+import java.util.Date;
 import java.util.Set;
 
 /**
@@ -50,6 +51,8 @@ public class PostParam implements InputConverter<Post> {
     @Min(value = 0, message = "Post top priority must not be less than {value}")
     private Integer topPriority = 0;
 
+    private Date createTime;
+
     private PostCreateFrom createFrom = PostCreateFrom.ADMIN;
 
     private Set<Integer> tagIds;
@@ -59,12 +62,8 @@ public class PostParam implements InputConverter<Post> {
     @Override
     public Post convertTo() {
         if (StringUtils.isBlank(url)) {
-            url = HaloUtils.normalizeUrl(title);
-        } else {
-            url = HaloUtils.normalizeUrl(url);
+            url = title;
         }
-
-        url = HaloUtils.initializeUrlIfBlank(url);
 
         Post post = InputConverter.super.convertTo();
         // Crypt password
@@ -78,12 +77,8 @@ public class PostParam implements InputConverter<Post> {
     @Override
     public void update(Post post) {
         if (StringUtils.isBlank(url)) {
-            url = HaloUtils.normalizeUrl(title);
-        } else {
-            url = HaloUtils.normalizeUrl(url);
+            url = title;
         }
-
-        url = HaloUtils.initializeUrlIfBlank(url);
 
         InputConverter.super.update(post);
 

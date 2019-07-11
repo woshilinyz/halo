@@ -2,6 +2,7 @@ package run.halo.app.service.base;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import run.halo.app.model.dto.BaseCommentDTO;
@@ -11,6 +12,7 @@ import run.halo.app.model.params.BaseCommentParam;
 import run.halo.app.model.params.CommentQuery;
 import run.halo.app.model.vo.BaseCommentVO;
 import run.halo.app.model.vo.BaseCommentWithParentVO;
+import run.halo.app.model.vo.CommentWithHasChildrenVO;
 
 import java.util.Collection;
 import java.util.Comparator;
@@ -184,9 +186,54 @@ public interface BaseCommentService<COMMENT extends BaseComment> extends CrudSer
     List<BaseCommentVO> convertToVo(@Nullable List<COMMENT> comments, @Nullable Comparator<BaseCommentVO> comparator);
 
     /**
-     * Target must exist.
+     * Target validation.
      *
      * @param targetId target id must not be null (post id, sheet id or journal id)
      */
-    void targetMustExist(@NonNull Integer targetId);
+    void validateTarget(@NonNull Integer targetId);
+
+    /**
+     * Lists a page of top comment.
+     *
+     * @param targetId target id must not be null
+     * @param status   comment status must not be null
+     * @param pageable page info must not be null
+     * @return a page of top comment
+     */
+    @NonNull
+    Page<CommentWithHasChildrenVO> pageTopCommentsBy(@NonNull Integer targetId, @NonNull CommentStatus status, @NonNull Pageable pageable);
+
+    /**
+     * Lists children comments.
+     *
+     * @param targetId        target id must not be null
+     * @param commentParentId comment parent id must not be null
+     * @param status          comment status must not be null
+     * @param sort            sort info must not be null
+     * @return a list of children comment
+     */
+    @NonNull
+    List<COMMENT> listChildrenBy(@NonNull Integer targetId, @NonNull Long commentParentId, @NonNull CommentStatus status, @NonNull Sort sort);
+
+    /**
+     * Filters comment ip address.
+     *
+     * @param comment comment dto must not be null
+     */
+    <T extends BaseCommentDTO> T filterIpAddress(@NonNull T comment);
+
+    /**
+     * Filters comment ip address.
+     *
+     * @param comments comment dto list
+     */
+    <T extends BaseCommentDTO> List<T> filterIpAddress(@Nullable List<T> comments);
+
+    /**
+     * Filters comment ip address.
+     *
+     * @param commentPage comment page
+     */
+    <T extends BaseCommentDTO> Page<T> filterIpAddress(@NonNull Page<T> commentPage);
+
 }

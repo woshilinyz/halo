@@ -7,11 +7,12 @@ import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import run.halo.app.event.options.OptionUpdatedEvent;
 import run.halo.app.event.theme.ThemeActivatedEvent;
 import run.halo.app.event.user.UserUpdatedEvent;
+import run.halo.app.handler.theme.config.support.ThemeProperty;
+import run.halo.app.model.support.HaloConst;
 import run.halo.app.service.OptionService;
 import run.halo.app.service.ThemeService;
 import run.halo.app.service.ThemeSettingService;
@@ -78,6 +79,7 @@ public class FreemarkerConfigAwareListener {
         log.debug("Received option updated event");
 
         loadOptionsConfig();
+        loadThemeConfig();
     }
 
 
@@ -88,11 +90,15 @@ public class FreemarkerConfigAwareListener {
 
     private void loadOptionsConfig() throws TemplateModelException {
         configuration.setSharedVariable("options", optionService.listOptions());
+        configuration.setSharedVariable("context", optionService.getBlogBaseUrl());
+        configuration.setSharedVariable("version", HaloConst.HALO_VERSION);
         log.debug("Loaded options");
     }
 
     private void loadThemeConfig() throws TemplateModelException {
-        configuration.setSharedVariable("theme", themeService.getActivatedTheme());
+        ThemeProperty activatedTheme = themeService.getActivatedTheme();
+        configuration.setSharedVariable("theme", activatedTheme);
+        configuration.setSharedVariable("static", optionService.getBlogBaseUrl() + "/" + activatedTheme.getFolderName());
         configuration.setSharedVariable("settings", themeSettingService.listAsMapBy(themeService.getActivatedThemeId()));
         log.debug("Loaded theme and settings");
     }

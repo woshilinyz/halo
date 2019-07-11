@@ -3,10 +3,10 @@ package run.halo.app.service;
 import java.util.Map;
 
 /**
- * Mail server
+ * Mail service interface.
  *
  * @author ryanwang
- * @date : 2019-03-17
+ * @date 2019-03-17
  */
 public interface MailService {
 
@@ -32,11 +32,11 @@ public interface MailService {
     /**
      * Send mail with attachments
      *
-     * @param to           recipient
-     * @param subject      subject
-     * @param content      content
-     * @param templateName template name
-     * @param attachFilename    attachment path
+     * @param to             recipient
+     * @param subject        subject
+     * @param content        content
+     * @param templateName   template name
+     * @param attachFilename attachment path
      */
     void sendAttachMail(String to, String subject, Map<String, Object> content, String templateName, String attachFilename);
 }

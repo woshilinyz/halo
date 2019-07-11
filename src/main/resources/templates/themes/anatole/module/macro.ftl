@@ -1,4 +1,4 @@
-<#include "/common/macro/common_macro.ftl">
+<#import "/common/macro/common_macro.ftl" as common>
 <#macro head title,keywords,description>
 <!DOCTYPE html>
 <html>
@@ -14,11 +14,10 @@
     <meta name="author" content="${user.nickname!}" />
     <meta name="keywords" content="${keywords!}"/>
     <meta name="description" content="${description!}" />
-    <@verification />
-    <@favicon />
-    <link href="/${theme.folderName}/source/css/font-awesome.min.css" type="text/css" rel="stylesheet"/>
-    <link rel="stylesheet" href="/${theme.folderName}/source/css/blog_basic.min.css?version=88107691fe">
-    <link href="/${theme.folderName}/source/css/style.min.css" type="text/css" rel="stylesheet" />
+    <@common.globalHeader />
+    <link href="${static!}/source/css/font-awesome.min.css" type="text/css" rel="stylesheet"/>
+    <link rel="stylesheet" href="${static!}/source/css/blog_basic.min.css?version=88107691fe">
+    <link href="${static!}/source/css/style.min.css" type="text/css" rel="stylesheet" />
     <link rel="alternate" type="application/rss+xml" title="atom 1.0" href="/atom.xml">
     <style>
         <#if !settings.post_title_uppper!true>
@@ -48,7 +47,7 @@
 <body>
 </#macro>
 <#macro footer>
-<script type="text/javascript" src="/${theme.folderName}/source/js/jquery.min.js"></script>
+<script type="text/javascript" src="${static!}/source/js/jquery.min.js"></script>
 <script type="text/javascript">
     var url = location.href;
     var urlstatus = false;
@@ -77,7 +76,7 @@
 	  xhr.send();
     </#if>
 </script>
-<@statistics />
+<@common.statistics />
 </body>
 </html>
 </#macro>

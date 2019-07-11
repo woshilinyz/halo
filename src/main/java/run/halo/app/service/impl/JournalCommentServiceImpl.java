@@ -1,11 +1,11 @@
 package run.halo.app.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
-import cn.hutool.core.lang.Assert;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 import run.halo.app.exception.NotFoundException;
 import run.halo.app.model.dto.JournalDTO;
 import run.halo.app.model.entity.Journal;
@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
  * Journal comment service implementation.
  *
  * @author johnniang
- * @date 19-4-25
+ * @date 2019-04-25
  */
 @Service
 public class JournalCommentServiceImpl extends BaseCommentServiceImpl<JournalComment> implements JournalCommentService {
@@ -47,9 +47,9 @@ public class JournalCommentServiceImpl extends BaseCommentServiceImpl<JournalCom
     }
 
     @Override
-    public void targetMustExist(Integer journalId) {
+    public void validateTarget(Integer journalId) {
         if (!journalRepository.existsById(journalId)) {
-            throw new NotFoundException("The journal with id " + journalId + " was not found");
+            throw new NotFoundException("该日志不存在或已删除").setErrorData(journalId);
         }
     }
 

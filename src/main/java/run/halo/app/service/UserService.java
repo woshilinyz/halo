@@ -11,9 +11,10 @@ import run.halo.app.service.base.CrudService;
 import java.util.Optional;
 
 /**
- * User service.
+ * User service interface.
  *
  * @author johnniang
+ * @date 2019-03-14
  */
 public interface UserService extends CrudService<User, Integer> {
 
@@ -122,4 +123,11 @@ public interface UserService extends CrudService<User, Integer> {
      * @param plainPassword plain password must not be blank
      */
     void setPassword(@NonNull User user, @NonNull String plainPassword);
+
+    /**
+     * Set user default avatar，use Gravatar(http://cn.gravatar.com)
+     *
+     * @param user user must not be null
+     */
+    void setDefaultAvatar(@NonNull User user);
 }

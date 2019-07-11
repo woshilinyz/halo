@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Controller;
@@ -32,15 +33,11 @@ import static org.springframework.data.domain.Sort.Direction.DESC;
 @Controller
 public class ContentFeedController {
 
-    private final PostService postService;
-
-    private final OptionService optionService;
-
-    private final FreeMarkerConfigurer freeMarker;
-
     private final static String UTF_8_SUFFIX = ";charset=UTF-8";
-
     private final static String XML_MEDIA_TYPE = MediaType.APPLICATION_XML_VALUE + UTF_8_SUFFIX;
+    private final PostService postService;
+    private final OptionService optionService;
+    private final FreeMarkerConfigurer freeMarker;
 
     public ContentFeedController(PostService postService,
                                  OptionService optionService,
@@ -92,8 +89,9 @@ public class ContentFeedController {
      */
     @GetMapping(value = {"sitemap", "sitemap.xml"}, produces = XML_MEDIA_TYPE)
     @ResponseBody
-    public String sitemapXml(Model model) throws IOException, TemplateException {
-        model.addAttribute("posts", buildPosts(null));
+    public String sitemapXml(Model model,
+                             @PageableDefault(size = Integer.MAX_VALUE, sort = "createTime", direction = DESC) Pageable pageable) throws IOException, TemplateException {
+        model.addAttribute("posts", buildPosts(pageable));
         Template template = freeMarker.getConfiguration().getTemplate("common/web/sitemap_xml.ftl");
         return FreeMarkerTemplateUtils.processTemplateIntoString(template, model);
     }
@@ -104,9 +102,10 @@ public class ContentFeedController {
      * @param model model
      * @return String
      */
-    @GetMapping(value = "sitemap.html", produces = MediaType.TEXT_PLAIN_VALUE)
-    public String sitemapHtml(Model model) {
-        model.addAttribute("posts", buildPosts(null));
+    @GetMapping(value = "sitemap.html")
+    public String sitemapHtml(Model model,
+                              @PageableDefault(size = Integer.MAX_VALUE, sort = "createTime", direction = DESC) Pageable pageable) {
+        model.addAttribute("posts", buildPosts(pageable));
         return "common/web/sitemap_html";
     }
 
@@ -142,12 +141,7 @@ public class ContentFeedController {
      * @param pageable pageable
      * @return List<Post>
      */
-    private List<PostListVO> buildPosts(Pageable pageable) {
-        if (pageable == null) {
-            Page<Post> postPage = postService.pageBy(PostStatus.PUBLISHED, null);
-            return postService.convertToListVo(postPage).getContent();
-        }
-
+    private List<PostListVO> buildPosts(@NonNull Pageable pageable) {
         Page<Post> postPage = postService.pageBy(PostStatus.PUBLISHED, pageable);
         Page<PostListVO> posts = postService.convertToListVo(postPage);
         return posts.getContent();
